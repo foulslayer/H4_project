@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+    <div class="col">
+      </div>
+      <div class="col-6">
+        <table class="table table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">afstand</th>
+            <th scope="col">date</th>
+          </tr>
+          <thead class="thead-light">
+        <tbody>
+    <% collection.forEach(Sensordata => { %>
+        <tr>
+        <td><%= Sensordata.afstand %></td>
+        <td><%= Sensordata.time %></td>
+    </tr>
+    <% }) %>
+</tbody>
+</table>
+</div>
+<div class="col">
+  </div>
+</div>
+</div>
+
+<br>
+<br>
+
+<div class="container">
+    <div class="row">
+<div class="col"></div>
+<canvas class="col-6" id="myChart" style="width:100%;max-width:600px"></canvas>
+<div class="col"></div>
+</div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      let Sensordata = [];
+      fetch('/data') // Replace '/data' with your server endpoint
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json();
+          })
+          .then(data => {
+              data.forEach(element => {
+                  if (Sensordata.some(item => item.x === element.time)) { 
+                      let existingIndex = Sensordata.findIndex(item => item.x === element.time);
+                      Sensordata[existingIndex].y++;
+                  } else {
+                      Sensordata.push({x: element.time, y: 1});
+                  }
+              });
+
+              console.log(Sensordata);
+
+              var xValues = Sensordata.map(function(item) {
+                  return item.x;
+              });
+
+              var yValues = Sensordata.map(function(item) {
+                  return item.y;
+              });
+
+              var barColors = ["red", "blue", 'green', 'black', 'yellow', 'orange', 'pink']; // Example colors, you can define your own
+
+              new Chart("myChart", {
+                  type: "bar",
+                  data: {
+                      labels: xValues,
+                      datasets: [{
+                          backgroundColor: barColors,
+                          data: yValues
+                      }]
+                  },
+                  options: {
+                      legend: {display: false},
+                      title: {
+                          display: true,
+                          text: "World"
+                      },
+                      scales: {
+                          y: {
+                              beginAtZero: true,
+                              min: 0,
+                              max: 5
+                          }
+                      }
+                  }
+              });
+          })
+          .catch(error => {
+              console.error('Error fetching data:', error);
+          });
+  });
+</script>
+</body>
+</html>
